@@ -1,0 +1,24 @@
+{
+  "name": "rooftopdb",
+  "version": "0.0.1",
+  "description": "Database of rooftop access with node.js and much more technologic goodness.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gunargessner/rooftopdb.git"
+  },
+  "author": "Gunar Gessner",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gunargessner/rooftopdb/issues"
+  },
+  "homepage": "https://github.com/gunargessner/rooftopdb",
+  "dependencies": {
+    "express": "^4.3.1",
+    "jade": "^1.3.1",
+    "tingodb": "^0.2.1"
+  }
+}
