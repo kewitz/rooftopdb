@@ -1,0 +1,21 @@
+extends layout
+block body
+	nav.top-bar(data-topbar)
+		li.name
+			h1
+				a(href='#')='rooftopDB'
+		if username
+			section.top-bar-section
+				ul.right
+					li
+						a(href='#')= username
+	div.row
+		div.radius.small-12.medium-4.columns.small-centered
+			fieldset
+				legend= 'Login'
+				input(type='text',placeholder='User...')
+				div.row.collapse
+					div.small-10.columns
+						input(type='text',placeholder='Pass...')
+					div.small-2.columns
+						a(href='#').button.postfix= 'Go'
