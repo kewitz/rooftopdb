@@ -1,1 +1,0 @@
-user = require './lib/user.coffee'
