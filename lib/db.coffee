@@ -1,3 +1,7 @@
+###
+	Singleton database connection.
+###
+
 engine = require('tingodb')()
 
 class Singleton

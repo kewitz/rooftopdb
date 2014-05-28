@@ -1,17 +1,66 @@
+###
+	User Model and Control.
+###
+
 crypto = require 'crypto'
 db = require './db.coffee'
+col = db.collection 'users'
 
-class User
-	constructor: (@nick, @pass) ->
-		@col = db.collection 'users'
+class Model
+	constructor: (params) ->
+		if params?
+			{@name, @pass, @salt} = params
 
-	create: (req, res) ->
-		@_parse req.body, (user) ->
-			user._exists (exist) ->
-				if exist
-					console.log 'Usuário %s já cadastrado.', user.nick
-				else
-					user._save()
+	validate: (pass) ->
+		@pass == crypto.createHmac('sha1', @salt).update(pass+'').digest('hex')
+
+	hash: (pass) ->
+		@saltit() unless @salt
+		@pass = crypto.createHmac('sha1', @salt).update(pass+'').digest('hex')
+
+	saltit: ->
+		@salt = crypto.createHmac('sha1', '').update(Math.round((new Date().valueOf() * Math.random())) + '').digest('hex')
+
+	save: (cb) ->
+		user = this
+		@exists (e) ->
+			if e then cb "User already exists." else col.insert user, cb
+
+	update: (cb) ->
+		user = this
+		console.log "Update", user
+		col.update {_id: user._id}, {$set:user}, cb
+
+	exists: (cb) ->
+		if @name?
+			col.findOne {name:@name}, (err,doc) ->
+				cb doc?
+
+	serialize: ->
+		_id: @_id, name: @name
+
+	@deserialize: (id, cb) ->
+		col.findOne {_id: id}, (err, doc) ->
+			err ?= "User does not exist." unless doc?
+			if err? 
+				cb err, null
+			else if doc?
+				r = new Model doc
+				r._id = doc._id
+				cb null, r
+
+	@find: (filter, cb) ->
+		col.find filter, cb
+
+
+class Control
+	create: (req, res, next) ->
+		u = new User(req.body)
+		u.save (err, doc) ->
+			if err? then console.log err else console.log "New user #{doc.name} added."
+			res.err = err
+			res.user = doc
+			next();
 
 	auth: (req,res) ->
 		@_parse req.body, (user) ->
@@ -19,28 +68,4 @@ class User
 				authed = count == 1
 		return
 
-	_makePass: (pass) ->
-		if pass?
-			@pass = crypto.createHmac('sha1', '1156880414195').update(pass+'').digest('hex')
-
-	_parse: (doc, next) ->
-		@nick = doc.nick
-		@pass = @_makePass doc.pass
-		next this
-
-	_exists: ->
-		(@col.find(nick: @nick).count((err, count) ->
-			count > 0
-		))()
-
-	_save: (next) ->
-		this._exists (exist) ->
-			if !exist
-				@col.insert this, next(err,doc)
-
-	_find: (doc) ->
-		@col.find(doc).toArray (err,docs) ->
-			return docs
-		return
-
-module.exports = User
+module.exports = Model: Model, Control: Control
